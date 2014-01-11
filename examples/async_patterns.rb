@@ -54,3 +54,22 @@ calculation.value += 1
 puts calculation.value
 
 #>--------------------------------------------------
+
+# more complex way
+
+puts "mixed usecase with arrays as return obj"
+calc1 = async :parallelism do
+
+  sleep 4
+  # some big database processing brutal memory eater stuff
+  [4*5,"hy"]
+
+end
+
+calc2 = async {
+  [5+1,"sup!"]
+}
+
+puts calc1.value == calc2.value
+puts (calc1.value+calc2.value).inspect
+

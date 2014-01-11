@@ -72,5 +72,14 @@ module Asynchronous
       }
     end
 
+    # alias
+    begin
+      #alias :v        :value
+      #alias :get      :value
+      #alias :gets     :value
+      #alias :response :value
+      #alias :return   :value
+    end
+
   end
 end

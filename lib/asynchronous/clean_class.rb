@@ -8,6 +8,7 @@ class CleanClass < BasicObject
         :object_id,
         :__send__,
         :methods,
+        :alias,
         :new
     ]).each do |method|
       undef_method method
