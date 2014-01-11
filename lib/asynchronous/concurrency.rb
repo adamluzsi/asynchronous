@@ -10,13 +10,20 @@ module Asynchronous
     def initialize(callable)
       begin
         @value= nil
+        @try_count= 0
         @rescue_state= nil
         @thread ||= ::Thread.new { callable.call }
         @rescue_state= nil
       rescue ThreadError
         @rescue_state ||= true
-        sleep 5
-        retry
+        @try_count += 1
+        if 3 <= @try_count
+          @value= callable.call
+          @rescue_state= nil
+        else
+          sleep 5
+          retry
+        end
       end
     end
 

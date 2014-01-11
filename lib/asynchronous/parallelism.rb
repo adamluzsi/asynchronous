@@ -11,8 +11,6 @@ module Asynchronous
 
     # Basic
     begin
-
-      #require 'yaml'
       @@pids=[]
       def initialize callable
 
@@ -33,7 +31,6 @@ module Asynchronous
         @@pids.push(@pid)
 
       end
-
     end
 
     # return value
@@ -56,22 +53,13 @@ module Asynchronous
 
       end
 
-
       def value=(obj)
         @value= obj
       end
 
-      #def method_missing(method,*args)
-      #  value.__send__(method,*args)
-      #end
-      #
-      #def respond_to_missing?(method, include_private = false)
-      #  value.respond_to?(method, include_private)
-      #end
-
     end
 
-    # kill Zombies at Kernel Exit
+    # kill kidos at Kernel Exit
     begin
       ::Kernel.at_exit {
         @@pids.each { |pid|

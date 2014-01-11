@@ -2,7 +2,58 @@ asynchronous
 ============
 
 Asynchronous Patterns for Ruby Based on Pure MRI CRuby code
+The goal is to use the original MRI C libs for achive
+real async patterns in ruby
 
+Well it is achived...
+
+
+# OS managed thread
+
+copy on write memory share,
+so you cant change anything in the mother process
+only with the return value later.
+This method is stronger the more CPU core the os have
+
+Ideal for Big jobs that require lot of memory allocation or
+heavy CPU load to get a value
+Like parsing (in some case)
+
+```ruby
+
+calculation = async :parallelism do
+
+  sleep 4
+  # remember, everything you
+  # write here only mather in this block
+  # will not affect the real process only
+  # the last return value of the block
+  4 * 5
+
+end
+
+# to call the value (syncronize):
+calculation.value
+
+```
+
+# VM managed thread
+
+you can use simple :c also instead of :concurrency as sym,
+remember :concurrency is all about GIL case, so
+you can modify the objects in memory
+This is ideal for little operations in simultaneously or
+when you need to update objects in the memory and not the
+return value what is mather.
+Remember well that GarbageCollector will affect the speed.
+
+```ruby
+
+calculation= async { sleep 3; 4 * 3 }
+# to call the value (syncronize):
+calculation.value
+
+```
 # Examples
 
 the "simple async processing" will let you use os threads (1.9.n+)
