@@ -8,12 +8,23 @@ real async patterns in ruby
 Well it is achived...
 
 for short:
+
 Concurrency is when two tasks can start, run, and complete in overlapping time periods.
 It doesn't necessarily mean they'll ever both be running at the same instant.
 Eg. multitasking on a single-core machine.
 
 Parallelism is when tasks literally run at the same time.
 Eg. on a multicore processor.
+
+
+# Quoting Sun's Multithreaded Programming Guide:
+
+Parallelism: 
+- A condition that arises when at least two threads are executing simultaneously.
+
+Concurrency: 
+- A condition that exists when at least two threads are making progress. 
+- A more generalized form of parallelism that can include time-slicing as a form of virtual parallelism
 
 
 # OS managed thread
