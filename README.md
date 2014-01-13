@@ -64,13 +64,9 @@ calculation.value
 ```
 # Examples
 
-the "simple async processing" will let you use os threads (1.9.n+)
+the "async patterns" will let you see how easy to use threads 
 for multiprocessing so you can give multiple task to do and
-until you ask for the value, the process will be in the background
-You can also use OS threads instead of VM Threads for real Parallelism
-
-the "require_files" shows you how can you get files from directory
-in a recursive way and stuffs like that so you can be lay
+until you need they value, let the process run in the background
 
 ## LICENSE
 
