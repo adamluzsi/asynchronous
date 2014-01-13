@@ -5,9 +5,19 @@ Asynchronous Patterns for Ruby Based on Pure MRI CRuby code
 The goal is to use the original MRI C libs for achive
 real async patterns in ruby
 
-Well it is achived...
+Well it is achived in Ruby really simple, and elegant way.
 
-for short:
+
+## Quoting Sun's Multithreaded Programming Guide:
+
+Parallelism: 
+- A condition that arises when at least two threads are executing simultaneously.
+
+Concurrency: 
+- A condition that exists when at least two threads are making progress. 
+- A more generalized form of parallelism that can include time-slicing as a form of virtual parallelism
+
+### for short:
 
 Concurrency is when two tasks can start, run, and complete in overlapping time periods.
 It doesn't necessarily mean they'll ever both be running at the same instant.
@@ -17,17 +27,7 @@ Parallelism is when tasks literally run at the same time.
 Eg. on a multicore processor.
 
 
-# Quoting Sun's Multithreaded Programming Guide:
-
-Parallelism: 
-- A condition that arises when at least two threads are executing simultaneously.
-
-Concurrency: 
-- A condition that exists when at least two threads are making progress. 
-- A more generalized form of parallelism that can include time-slicing as a form of virtual parallelism
-
-
-# OS managed thread
+## OS managed thread (Native Threads)
 
 copy on write memory share,
 so you cant change anything in the mother process
@@ -56,7 +56,7 @@ calculation.value
 
 ```
 
-# VM managed thread
+## VM managed thread (Green Threads)
 
 you can use simple :c also instead of :concurrency as sym,
 remember :concurrency is all about GIL case, so
