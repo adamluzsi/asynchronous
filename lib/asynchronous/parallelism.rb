@@ -9,28 +9,145 @@ module Asynchronous
   # when you need to update objects in the memory use :concurrency
   class Parallelism < CleanClass
 
-    # Basic
+    # Basic class variables
     begin
-      @@pids=[]
+
+      @@pids      ||= []
+      @@tmpdir    ||= nil
+      @@motherpid ||= $$
+      @@agent     ||= nil
+      @@zombie    ||= true
+
+    end
+
+    # main def for logic
+    begin
       def initialize callable
 
-        @value= nil
-        @rd, @wr = ::IO.pipe
-        @pid= ::Kernel.fork do
-
-          ::Kernel.trap("TERM") do
-            exit
-          end
-
-          @rd.close
-          @wr.write ::Marshal.dump(callable.call)#.to_yaml
-          @wr.close
-
+        # defaults
+        begin
+          @value= nil
+          @rd, @wr = ::IO.pipe
         end
 
-        @@pids.push(@pid)
+        # create a process
+        begin
+          @pid= ::Kernel.fork do
+
+            # anti zombie
+            begin
+              ::Kernel.trap("TERM") do
+                ::Kernel.exit
+              end
+              ::Thread.new do
+                ::Kernel.loop do
+                  begin
+                    ::Kernel.sleep 1
+                    if mother? == false
+                      ::Kernel.exit!
+                    end
+                  end
+                end
+              end
+            end
+
+            # return the value
+            begin
+              @rd.close
+              @wr.write ::Marshal.dump(callable.call)
+              @wr.close
+            end
+
+          end
+          @@pids.push(@pid)
+        end
 
       end
+    end
+
+    # connection for in case of mother die
+    begin
+
+      #def tmpdir
+      #
+      #  ::Kernel.require "tmpdir"
+      #  @@tmpdir= ::File.join(::Dir.tmpdir,('asynchronous'))
+      #  unless ::File.directory?(@@tmpdir)
+      #    ::Dir.mkdir(@@tmpdir)
+      #  end
+      #
+      #  %w[ signal ].each do |one_str|
+      #    unless ::File.directory?(::File.join(@@tmpdir,one_str))
+      #      ::Dir.mkdir(::File.join(@@tmpdir,one_str))
+      #    end
+      #  end
+      #
+      #  # pidnamed tmp file for tracking
+      #  unless ::File.exist?(::File.join(@@tmpdir,'signal',@@motherpid.to_s))
+      #    ::File.new(::File.join(@@tmpdir,'signal',@@motherpid.to_s),"w").write('')
+      #  end
+      #
+      #end
+      #
+      #def tmp_write_agent
+      #  if @@agent != true
+      #    ::Thread.new do
+      #      ::Kernel.loop do
+      #        ::File.open(::File.join(@@tmpdir,"signal",@@motherpid.to_s),"w") do |file|
+      #          file.write( ::Time.now.to_i.to_s )
+      #        end
+      #        sleep 3
+      #      end
+      #    end
+      #    @@agent ||= true
+      #  end
+      #end
+      #
+      #def tmp_read
+      #
+      #  counter= 0
+      #  begin
+      #
+      #    ::Kernel.loop do
+      #      return_string= ::File.open(
+      #          ::File.join(@@tmpdir,"signal",@@motherpid.to_s),
+      #          ::File::RDONLY
+      #      ).read
+      #
+      #      if !return_string.nil? && return_string != ""
+      #        return return_string
+      #      else
+      #        if counter > 5
+      #          return nil
+      #        else
+      #          counter += 1
+      #          ::Kernel.sleep(1)
+      #        end
+      #      end
+      #
+      #    end
+      #
+      #  rescue ::IOError
+      #    if counter > 5
+      #      return nil
+      #    else
+      #      counter += 1
+      #    end
+      #    ::Kernel.sleep 1
+      #    retry
+      #  end
+      #
+      #end
+
+      def mother?
+        begin
+          ::Process.kill(0,@@motherpid)
+          return true
+          rescue ::Errno::ESRCH
+          return false
+        end
+      end
+
     end
 
     # return value
@@ -41,7 +158,6 @@ module Asynchronous
         if @value.nil?
 
           @wr.close
-          return_value= @rd.read
           return_value= ::Marshal.load(return_value)
           @rd.close
           @@pids.delete(@pid)
@@ -74,7 +190,7 @@ module Asynchronous
 
     # alias
     begin
-      #alias :v        :value
+      alias :v        :value
       #alias :get      :value
       #alias :gets     :value
       #alias :response :value
