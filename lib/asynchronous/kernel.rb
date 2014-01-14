@@ -14,11 +14,13 @@ module Kernel
   def async(type= :Concurrency ,&block)
     type= type.to_s
     case type.downcase[0]
-      when "c"
+      # Concurrency / VM / Green
+      when "c","v","g"
         begin
           Asynchronous::Concurrency.new(block)
         end
-      when "p"
+      # Parallelism / OS / Native
+      when "p","o","n"
         begin
           Asynchronous::Parallelism.new(block)
         end
