@@ -1,5 +1,4 @@
-#require 'async'
-require_relative "../lib/asynchronous"
+require 'async'
 
 async1= async :OS do
 
