@@ -12,8 +12,7 @@
 #
 module Kernel
   def async(type= :Concurrency ,&block)
-    type= type.to_s
-    case type.downcase[0]
+    case type.to_s.downcase[0]
       # Concurrency / VM / Green
       when "c","v","g"
         begin
@@ -25,7 +24,9 @@ module Kernel
           Asynchronous::Parallelism.new(block)
         end
       else
-        nil
+        begin
+          Asynchronous::Concurrency.new(block)
+        end
 
     end
   end

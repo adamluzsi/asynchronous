@@ -17,6 +17,7 @@ module Asynchronous
       @@motherpid ||= $$
       @@agent     ||= nil
       @@zombie    ||= true
+      #::Kernel.require 'yaml'
 
     end
 
@@ -43,7 +44,7 @@ module Asynchronous
                 ::Kernel.loop do
                   begin
                     ::Kernel.sleep 1
-                    if mother? == false
+                    if alive?(@@motherpid) == false
                       ::Kernel.exit!
                     end
                   end
@@ -53,9 +54,16 @@ module Asynchronous
 
             # return the value
             begin
+
+              return_value= callable.call
+
               @rd.close
-              @wr.write ::Marshal.dump(callable.call)
+              @wr.write ::Marshal.dump(return_value)
+              #@wr.write return_value.to_yaml
+
               @wr.close
+
+              ::Process.exit!
             end
 
           end
@@ -68,80 +76,9 @@ module Asynchronous
     # connection for in case of mother die
     begin
 
-      #def tmpdir
-      #
-      #  ::Kernel.require "tmpdir"
-      #  @@tmpdir= ::File.join(::Dir.tmpdir,('asynchronous'))
-      #  unless ::File.directory?(@@tmpdir)
-      #    ::Dir.mkdir(@@tmpdir)
-      #  end
-      #
-      #  %w[ signal ].each do |one_str|
-      #    unless ::File.directory?(::File.join(@@tmpdir,one_str))
-      #      ::Dir.mkdir(::File.join(@@tmpdir,one_str))
-      #    end
-      #  end
-      #
-      #  # pidnamed tmp file for tracking
-      #  unless ::File.exist?(::File.join(@@tmpdir,'signal',@@motherpid.to_s))
-      #    ::File.new(::File.join(@@tmpdir,'signal',@@motherpid.to_s),"w").write('')
-      #  end
-      #
-      #end
-      #
-      #def tmp_write_agent
-      #  if @@agent != true
-      #    ::Thread.new do
-      #      ::Kernel.loop do
-      #        ::File.open(::File.join(@@tmpdir,"signal",@@motherpid.to_s),"w") do |file|
-      #          file.write( ::Time.now.to_i.to_s )
-      #        end
-      #        sleep 3
-      #      end
-      #    end
-      #    @@agent ||= true
-      #  end
-      #end
-      #
-      #def tmp_read
-      #
-      #  counter= 0
-      #  begin
-      #
-      #    ::Kernel.loop do
-      #      return_string= ::File.open(
-      #          ::File.join(@@tmpdir,"signal",@@motherpid.to_s),
-      #          ::File::RDONLY
-      #      ).read
-      #
-      #      if !return_string.nil? && return_string != ""
-      #        return return_string
-      #      else
-      #        if counter > 5
-      #          return nil
-      #        else
-      #          counter += 1
-      #          ::Kernel.sleep(1)
-      #        end
-      #      end
-      #
-      #    end
-      #
-      #  rescue ::IOError
-      #    if counter > 5
-      #      return nil
-      #    else
-      #      counter += 1
-      #    end
-      #    ::Kernel.sleep 1
-      #    retry
-      #  end
-      #
-      #end
-
-      def mother?
+      def alive?(pid)
         begin
-          ::Process.kill(0,@@motherpid)
+          ::Process.kill(0,pid)
           return true
           rescue ::Errno::ESRCH
           return false
@@ -157,9 +94,22 @@ module Asynchronous
 
         if @value.nil?
 
+
+          #while alive?(@pid)
+          #  ::Kernel.puts alive? @pid
+          #  ::Kernel.sleep 1
+          #  #sleep 1
+          #end
+
           @wr.close
-          return_value= ::Marshal.load(return_value)
+          return_value= @rd.read
           @rd.close
+
+          #::Kernel.puts return_value.inspect
+
+          return_value= ::Marshal.load(return_value)
+          #return_value= ::YAML.load(return_value)
+
           @@pids.delete(@pid)
           @value= return_value
 
@@ -182,7 +132,7 @@ module Asynchronous
           begin
             ::Process.kill(:TERM, pid)
           rescue ::Errno::ESRCH, ::Errno::ECHILD
-            ::STDOUT.puts "`kill': No such process (Errno::ESRCH)"
+            #::STDOUT.puts "`kill': No such process (Errno::ESRCH)"
           end
         }
       }
