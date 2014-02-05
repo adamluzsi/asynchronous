@@ -17,7 +17,7 @@ module Asynchronous
       @@motherpid ||= $$
       @@agent     ||= nil
       @@zombie    ||= true
-      #::Kernel.require 'yaml'
+      ::Kernel.require 'yaml'
 
     end
 
@@ -55,11 +55,14 @@ module Asynchronous
             # return the value
             begin
 
+              #::Kernel.puts callable.class
+
               return_value= callable.call
 
               @rd.close
-              @wr.write ::Marshal.dump(return_value)
-              #@wr.write return_value.to_yaml
+
+              #@wr.write ::Marshal.dump(return_value)
+              @wr.write return_value.to_yaml
 
               @wr.close
 
@@ -94,7 +97,6 @@ module Asynchronous
 
         if @value.nil?
 
-
           #while alive?(@pid)
           #  ::Kernel.puts alive? @pid
           #  ::Kernel.sleep 1
@@ -105,10 +107,8 @@ module Asynchronous
           return_value= @rd.read
           @rd.close
 
-          #::Kernel.puts return_value.inspect
-
-          return_value= ::Marshal.load(return_value)
-          #return_value= ::YAML.load(return_value)
+          #return_value= ::Marshal.load(return_value)
+          return_value= ::YAML.load(return_value)
 
           @@pids.delete(@pid)
           @value= return_value
