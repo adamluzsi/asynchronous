@@ -160,3 +160,17 @@ Kernel holding on Native threads with pipes can choke up
 * direct sleep commands can do this on multiple native threads
 ** hard processing load not like that, only kernel sleep
 
+SharedMemory objects not updating on chain method obj manipulation
+
+```ruby
+shared_memory.var= {'jobs'=>[]}
+
+{'jobs'=>[]}['jobs'].push 'data' #> {'jobs'=>[]}
+
+workaround is like that:
+
+local_variable= {'jobs'=>[]}
+local_variable['jobs'].push('data')
+
+shared_memory.var= local_variable
+```

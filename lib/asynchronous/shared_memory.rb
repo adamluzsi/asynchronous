@@ -40,15 +40,11 @@ module Asynchronous
     def asynchronous_set_value obj
       return @data.write_object obj
     end
-
-    def asynchronous_set_value= obj
-      self.asynchronous_set_value(obj)
-    end
+    alias :asynchronous_set_value= :asynchronous_set_value
 
     def asynchronous_get_value
       return @data.read_object
     end
-
 
     def method_missing(method, *args, &block)
 
@@ -76,6 +72,7 @@ module Asynchronous
         end
 
         return_value= new_value.__send__(method,*args,&block)
+
         unless new_value == original_value
           asynchronous_set_value new_value
         end
