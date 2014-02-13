@@ -8,7 +8,7 @@ real async patterns in ruby
 Well it is achived in Ruby really simple, and elegant way.
 
 
-## Quoting Sun's Multithreaded Programming Guide:
+### Quoting Sun's Multithreaded Programming Guide:
 
 Parallelism: 
 - A condition that arises when at least two threads are executing simultaneously.
@@ -17,7 +17,7 @@ Concurrency:
 - A condition that exists when at least two threads are making progress. 
 - A more generalized form of parallelism that can include time-slicing as a form of virtual parallelism
 
-### for short:
+#### for short:
 
 Concurrency is when two tasks can start, run, and complete in overlapping time periods.
 It doesn't necessarily mean they'll ever both be running at the same instant.
@@ -27,7 +27,7 @@ Parallelism is when tasks literally run at the same time.
 Eg. on a multicore processor.
 
 
-## OS managed thread (Native Threads)
+### OS managed thread (Native Threads)
 
 copy on write memory share,
 so you cant change anything in the mother process
@@ -73,33 +73,56 @@ calculation= async { sleep 3; 4 * 3 }
 calculation.value
 
 ```
-# Examples
 
-the "async patterns" will let you see how easy to use threads 
-for multiprocessing so you can give multiple task to do and
-until you need they value, let the process run in the background
+### Shared Memory
 
-## LICENSE
+By default the last value will be returned (OS) in IO.pipe,
+but when you need something else, there is the shared_memory!
 
-(The MIT License)
+Shared memory is good when you want make a ruby worked on native OS thread ,
+but need to update data back at the mother process.
 
-Copyright (c) 2009-2013 Adam Luzsi <adamluzsi@gmail.com>
+the usecase is simple like that:
+```ruby
 
-Permission is hereby granted, free of charge, to any person obtaining
-a copy of this software and associated documentation files (the
-'Software'), to deal in the Software without restriction, including
-without limitation the rights to use, copy, modify, merge, publish,
-distribute, sublicense, and/or sell copies of the Software, and to
-permit persons to whom the Software is furnished to do so, subject to
-the following conditions:
+SharedMemory.anything_you_want_use_as_variable_name= {:some=>:object}
+SharedMemory.anything_you_want_use_as_variable_name #> {:some=>:object}
 
-The above copyright notice and this permission notice shall be
-included in all copies or substantial portions of the Software.
+```
 
-THE SOFTWARE IS PROVIDED 'AS IS', WITHOUT WARRANTY OF ANY KIND,
-EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
-MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
-IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
-CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
-TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
-SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+by default i set the memory allocation to 16Mb because it common usecase to me (MongoDB),
+but feel free to change!:
+```ruby
+
+Asynchronous::Allocation.memory_allocation_size= 1024 #INT!
+
+```
+
+## Example
+
+```ruby
+
+# you can use simple :p or :parallelism as nametag
+# remember :parallelism is all about real OS thread case, so
+# you CANT modify the objects in memory only in sharedmemories,
+# the normal variables will only be copy on write modify
+# This is ideal for big operations where you need do a big process
+# w/o the fear of the Garbage collector slowness or the GIL lock
+# when you need to update objects in the memory use SharedMemory
+#
+# Remember! if the hardware only got 1 cpu, it will be like a harder
+# to use concurrency with an expensive memory allocation
+calculation = async :OS do
+
+  sleep 4
+  4 * 5
+
+end
+
+calculation.value += 1
+
+puts calculation.value
+
+```
+
+there are other examples that you can check in the exampels folder

@@ -5,6 +5,12 @@ module Asynchronous
 
   module Allocation
 
+    class << self
+      attr_accessor :memory_allocation_size
+    end
+
+    self.memory_allocation_size= 16384
+
     def self.mutex
       @@mutex
     end
@@ -25,7 +31,7 @@ module Asynchronous
             rescue ::NameError
               self.class_variable_set(
                   "@@#{method.to_s.sub('=','')}",
-                  ::ProcessShared::SharedMemory.new(16384)
+                  ::ProcessShared::SharedMemory.new( ::Asynchronous::Allocation.memory_allocation_size )
               )
               self.class_variable_get("@@#{method.to_s.sub('=','')}").write_object(args[0])
             end

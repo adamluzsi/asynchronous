@@ -34,13 +34,13 @@ puts calculation.value
 
 #>--------------------------------------------------
 # now let's see the Parallelism
-# you can use simple :p also instead of :parallelism
+# you can use simple :p or :parallelism as nametag
 # remember :parallelism is all about real OS thread case, so
-# you CANT modify the objects in memory only copy on write modify
+# you CANT modify the objects in memory only in sharedmemories,
+# the normal variables will only be copy on write modify
 # This is ideal for big operations where you need do a big process
-# and only get the return value so you can do big works without the fear of the
-# Garbage collector slowness or the GIL lock
-# when you need to update objects in the memory use :concurrency
+# w/o the fear of the Garbage collector slowness or the GIL lock
+# when you need to update objects in the memory use SharedMemory
 calculation = async :parallelism do
 
   sleep 4

@@ -12,7 +12,7 @@ Gem::Specification.new do |spec|
   spec.description   = %q{DSL for for dead simple to use asynchronous patterns in both VM managed and OS managed way (Concurrency and Parallelism) }
   spec.summary       = %q{Simple Async Based on standard CRuby}
   spec.homepage      = "https://github.com/adamluzsi/asynchronous"
-  spec.license       = "MIT"
+  #spec.license       = "MIT"
 
   spec.files         = SpecFiles
   spec.executables   = spec.files.grep(%r{^bin/}) { |f| File.basename(f) }
