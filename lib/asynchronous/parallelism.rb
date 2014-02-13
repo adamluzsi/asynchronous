@@ -7,127 +7,106 @@ module Asynchronous
   # and only get the return value so you can do big works without the fear of the
   # Garbage collector slowness or the GIL lock
   # when you need to update objects in the memory use :concurrency
-  class Parallelism < CleanClass
+  class Parallelism < Asynchronous::CleanClass
 
-    # Basic class variables
-    begin
+    def asynchronous_fork callable
+      return ::Kernel.fork do
 
-      @@pids      ||= []
-      @@tmpdir    ||= nil
-      @@motherpid ||= $$
-      @@agent     ||= nil
-      @@zombie    ||= true
-      ::Kernel.require 'yaml'
-
-    end
-
-    # main def for logic
-    begin
-      def initialize callable
-
-        # defaults
         begin
-          @value= nil
-          @rd, @wr = ::IO.pipe
-        end
-
-        # create a process
-        begin
-          @pid= ::Kernel.fork do
-
-            # anti zombie
-            begin
-              ::Kernel.trap("TERM") do
-                ::Kernel.exit
-              end
-              ::Thread.new do
-                ::Kernel.loop do
-                  begin
-                    ::Kernel.sleep 1
-                    if alive?(@@motherpid) == false
-                      ::Kernel.exit!
-                    end
-                  end
+          ::Kernel.trap("TERM") do
+            ::Kernel.exit
+          end
+          ::Thread.new do
+            ::Kernel.loop do
+              begin
+                ::Kernel.sleep 1
+                if ::Asynchronous::Parallelism.asynchronous_alive?(@@motherpid) == false
+                  ::Kernel.exit
                 end
               end
             end
-
-            # return the value
-            begin
-
-              #::Kernel.puts callable.class
-
-              return_value= callable.call
-
-              @rd.close
-
-              #@wr.write ::Marshal.dump(return_value)
-              @wr.write return_value.to_yaml
-
-              @wr.close
-
-              ::Process.exit!
-            end
-
           end
-          @@pids.push(@pid)
         end
+
+        @comm_line[0].close
+        @comm_line[1].write ::Marshal.dump(callable.call)
+        @comm_line[1].flush
+
+        #::Kernel.loop do
+        #  #::Kernel.puts @comm_line[0].closed?
+        #  #::Kernel.puts @comm_line[1].closed?
+        #  ::Kernel.sleep 1
+        #end
+
 
       end
     end
 
-    # connection for in case of mother die
-    begin
-
-      def alive?(pid)
-        begin
-          ::Process.kill(0,pid)
-          return true
-          rescue ::Errno::ESRCH
-          return false
+    def asynchronous_read_buffer
+      @read_buffer = ::Thread.new do
+        while !@comm_line[0].eof?
+          @value = ::Marshal.load(@comm_line[0])
         end
       end
+    end
+
+
+    def initialize callable
+
+      @@pids      ||= []
+      @@motherpid ||= $$
+
+      @comm_line   = ::IO.pipe
+      @value       = nil
+      @read_buffer = nil
+
+      asynchronous_read_buffer
+      @pid= asynchronous_fork callable
+      @@pids.push(@pid)
 
     end
 
-    # return value
-    begin
+    def asynchronous_get_pid
+      return @pid
+    end
 
-      def value
+    def self.asynchronous_alive?(pid)
+      begin
+        ::Process.kill(0,pid)
+        return true
+        rescue ::Errno::ESRCH
+        return false
+      end
+    end
 
-        if @value.nil?
+    def asynchronous_get_value
 
-          #while alive?(@pid)
-          #  ::Kernel.puts alive? @pid
-          #  ::Kernel.sleep 1
-          #  #sleep 1
-          #end
+      if @value.nil?
 
-          @wr.close
-          return_value= @rd.read
-          @rd.close
+        ::Process.wait(@pid, ::Process::WNOHANG )
 
-          #return_value= ::Marshal.load(return_value)
-          return_value= ::YAML.load(return_value)
-
-          @@pids.delete(@pid)
-          @value= return_value
-
-        end
-
-        return @value
+        @comm_line[1].close
+        @read_buffer.join
+        @comm_line[0].close
 
       end
 
-      def value=(obj)
-        @value= obj
-      end
+      return @value
 
     end
+
+    def asynchronous_set_value(obj)
+      @value= obj
+    end
+    alias :asynchronous_set_value= :asynchronous_set_value
+
+    def synchronize
+      asynchronous_get_value
+    end
+    alias :sync :synchronize
 
     # kill kidos at Kernel Exit
-    begin
-      ::Kernel.at_exit {
+    ::Kernel.at_exit {
         @@pids.each { |pid|
           begin
             ::Process.kill(:TERM, pid)
@@ -136,16 +115,25 @@ module Asynchronous
           end
         }
       }
+
+    def method_missing(method, *args)
+
+      return_value= nil
+      new_value= asynchronous_get_value
+      begin
+        original_value= new_value.dup
+      rescue ::TypeError
+        original_value= new_value
+      end
+      return_value= new_value.__send__(method,*args)
+      unless new_value == original_value
+          asynchronous_set_value new_value
+        end
+
+      return return_value
+
     end
 
-    # alias
-    begin
-      alias :v        :value
-      #alias :get      :value
-      #alias :gets     :value
-      #alias :response :value
-      #alias :return   :value
-    end
 
   end
 end

@@ -12,7 +12,8 @@
 #
 module Kernel
 
-  def async(type= :Concurrency ,&block)
+  def async type= :VM ,&block
+
     case type.to_s.downcase[0]
       # Concurrency / VM / Green
       when "c","v","g"
@@ -30,6 +31,7 @@ module Kernel
         end
 
     end
+
   end
 
   def shared_memory

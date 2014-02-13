@@ -52,7 +52,7 @@ calculation = async :parallelism do
 end
 
 # to call the value (syncronize):
-calculation.value
+calculation
 
 ```
 
@@ -70,7 +70,7 @@ Remember well that GarbageCollector will affect the speed.
 
 calculation= async { sleep 3; 4 * 3 }
 # to call the value (syncronize):
-calculation.value
+calculation
 
 ```
 
@@ -98,11 +98,21 @@ by default i set the memory allocation to 16Mb because it common usecase to me (
 but feel free to change!:
 ```ruby
 
-Asynchronous::Allocation.memory_allocation_size= 1024 #INT!
+Asynchronous.memory_allocation_size= 1024 #INT!
 
 ```
 
-## Example
+## making shared memory obj static (constant)
+
+you can set a shared memory obj to be static if you dont want it to be changed later on
+```ruby
+shared_memory.test_value= Array.new.push(:something)
+Asynchronous.static_variables.push :test_value
+shared_memory.test_value= Array.new #> this wont happen
+```
+
+
+### Example
 
 ```ruby
 
@@ -123,10 +133,25 @@ calculation = async :OS do
 
 end
 
-calculation.value += 1
+calculation += 1
 
-puts calculation.value
+puts calculation
 
 ```
 
+
 there are other examples that you can check in the exampels folder
+
+### known bugs
+
+In case of object_buffer error
+* use .sync method on the async variable
+
+```ruby
+calculation = async :OS do
+  sleep 4
+  4 * 5
+end
+
+calculation.sync #> or synchronize
+```

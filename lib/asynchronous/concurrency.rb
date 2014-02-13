@@ -5,9 +5,9 @@ module Asynchronous
   # you can modify the objects in memory
   # This is ideal for little operations in simultaneously or
   # when you need to update objects in the memory
-  class Concurrency < CleanClass
+  class Concurrency < Asynchronous::CleanClass
 
-    def initialize(callable)
+    def initialize callable
       begin
         @value= nil
         @try_count= 0
@@ -27,7 +27,7 @@ module Asynchronous
       end
     end
 
-    def value
+    def asynchronous_get_value
 
       if @value.nil?
         until @rescue_state.nil?
@@ -40,35 +40,39 @@ module Asynchronous
 
     end
 
-    def value=(obj)
+    def asynchronous_set_value(obj)
       @value= obj
     end
+    alias :asynchronous_set_value= :asynchronous_set_value
 
-    def inspect
-      if @thread.alive?
-        "#<Async running>"
-      else
-        value.inspect
-      end
+    def synchronize
+      asynchronous_get_value
     end
+    alias :sync :synchronize
 
     def method_missing(method, *args)
-      value.__send__(method, *args)
+
+      new_value= asynchronous_get_value
+
+      begin
+        original_value= new_value.dup
+      rescue ::TypeError
+        original_value= new_value
+      end
+
+      return_value= new_value.__send__(method,*args)
+      unless new_value == original_value
+        asynchronous_set_value new_value
+      end
+
+      return return_value
+
     end
 
-    def respond_to_missing?(method, include_private = false)
-      value.respond_to?(method, include_private)
-    end
+    #def respond_to_missing?(method, include_private = false)
+    #  value.respond_to?(method, include_private)
+    #end
 
-  end
-
-  # alias
-  begin
-    #alias :v        :value
-    #alias :get      :value
-    #alias :gets     :value
-    #alias :response :value
-    #alias :return   :value
   end
 
 end

@@ -1,31 +1,29 @@
 require_relative "../lib/asynchronous"
 
-shared_memory.test_value= Array.new
+shared_memory.test_value  = Array.new
+shared_memory.ready_state = Hash.new
+times_value= 5
 
-async1v= async :OS do
+times_value.times do
 
-  5.times do
-    shared_memory.test_value.push Random.rand(0..9)
+  # remember! IO pipes cant be made too fast!
+  # this does not mean the Shared memory cant handle the speed
+
+  var= async :OS do
+
+    shared_memory.test_value.push $$
+    shared_memory.ready_state[$$]= true
+
+    nil
   end
-
-  true
+  shared_memory.ready_state[var.asynchronous_get_pid] ||= false
 
 end
 
-async2v= async :OS do
 
-  5.times do
-    shared_memory.test_value.push Random.rand(10..19)
-  end
-
-  true
-
+while shared_memory.ready_state.values.include?(false)
+  sleep 0.5
 end
 
-async1v.value
-async2v.value
-
-puts "there should be 5 number between 0-9 and 5 between 10-19:",
-     shared_memory.test_value.inspect
-
-puts "this should be 10: #{shared_memory.test_value.count}"
+puts shared_memory.test_value.inspect
+puts "#{times_value} OS thread should made this much shared memory update: #{times_value} / and it's #{shared_memory.test_value.count}"

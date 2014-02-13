@@ -14,9 +14,9 @@ calculation = async :concurrency do
 end
 puts "hello concurrency"
 
-calculation.value += 1
+calculation += 1
 
-puts calculation.value
+puts calculation
 
 #>--------------------------------------------------
 # or you can use simple {} without sym and this will be by default a
@@ -26,10 +26,10 @@ calculation = async { sleep 3; 4 * 3 }
 
 puts "hello simple concurrency"
 
-calculation.value += 1
+calculation += 1
 
-# remember you have to use .value to cal the return value from the code block!
-puts calculation.value
+# remember you have to use  to cal the return value from the code block!
+puts calculation
 
 
 #>--------------------------------------------------
@@ -49,9 +49,9 @@ calculation = async :parallelism do
 end
 puts "hello parallelism"
 
-calculation.value += 1
+calculation += 1
 
-puts calculation.value
+puts calculation
 
 #>--------------------------------------------------
 
@@ -70,6 +70,6 @@ calc2 = async {
   [5+1,"sup!"]
 }
 
-puts calc1.value == calc2.value
-puts (calc1.value+calc2.value).inspect
+puts calc1 == calc2
+puts (calc1+calc2).inspect
 

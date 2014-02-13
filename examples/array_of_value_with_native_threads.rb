@@ -1,31 +1,23 @@
 require_relative "../lib/asynchronous"
 
+
 async1= async :OS do
-
   1000000*5
-
 end
 
 async2= async :OS do
 
-  sleep 10
+  var = ("sup" * 1000000)
+  puts "the superHuge String length in the pipe is: #{var.length}"
 
-  "sup" * 10000
-
-
+  var
 end
 
 
 async3= async :OS do
-
   1000000*5.0
-
 end
 
-# please do remember that parsing an object into
-# Marshal String can take up time if you have big Strings like
-# "sup" * 100000000
+puts async1
 
-puts async1.value,
-     async2.value[0..5],
-     async3.value
+puts [ async3, async2[0..5], async1 ]
