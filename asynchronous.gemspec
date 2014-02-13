@@ -19,10 +19,6 @@ Gem::Specification.new do |spec|
   spec.test_files    = spec.files.grep(%r{^(test|spec|features)/})
   spec.require_paths = ["lib"]
 
-  ##=======Runtime-ENV================##
-  #spec.add_runtime_dependency "asdf", ['~>4.1.3']
-
-  ##=======Development-ENV============##
-  #spec.add_development_dependency "asdf",['~>4.1.3']
+  spec.add_dependency "process_shared"
 
 end
