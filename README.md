@@ -144,7 +144,7 @@ there are other examples that you can check in the exampels folder
 
 ### known bugs
 
-In case of object_buffer error
+In rare case when you get object_buffer error
 * use .sync method on the async variable
 
 ```ruby
@@ -155,3 +155,8 @@ end
 
 calculation.sync #> or synchronize
 ```
+
+Kernel holding on Native threads with pipes can choke up
+* direct sleep commands can do this on multiple native threads
+** hard processing load not like that, only kernel sleep
+
