@@ -20,29 +20,74 @@ module Asynchronous
   end
 
 
+  class MemoryObj < CleanClass
+
+    attr_accessor :data
+
+    def initialize(obj)
+
+      self.data= ::ProcessShared::SharedMemory.new(
+          ::Asynchronous::Allocation.memory_allocation_size
+      )
+
+      self.data.write_object(obj)
+    end
+
+    def set_value obj
+      return self.data.write_object obj
+    end
+
+    def set_value= obj
+      self.set_value(obj)
+    end
+
+    def get_value
+      return self.data.read_object
+    end
+
+    def method_missing(method, *args)
+
+      new_value= nil
+      original_value= nil
+      return_value= nil
+
+      ::Asynchronous::Allocation.mutex.synchronize do
+
+        new_value= get_value
+        original_value= new_value.dup
+        return_value= new_value.__send__(method,*args)
+        unless new_value == original_value
+          set_value new_value
+        end
+
+      end
+
+      return return_value
+
+    end
+
+  end
+
   class SharedMemory < CleanClass
     class << self
       def method_missing(method, *args)
 
-        ::Asynchronous::Allocation.mutex.synchronize do
           if method.to_s.include?('=')
             begin
-              self.class_variable_get("@@#{method.to_s.sub('=','')}").write_object(args[0])
+              self.class_variable_get("@@#{method.to_s.sub('=','')}").set_value= args[0]
             rescue ::NameError
               self.class_variable_set(
                   "@@#{method.to_s.sub('=','')}",
-                  ::ProcessShared::SharedMemory.new( ::Asynchronous::Allocation.memory_allocation_size )
+                  ::Asynchronous::MemoryObj.new(args[0])
               )
-              self.class_variable_get("@@#{method.to_s.sub('=','')}").write_object(args[0])
             end
           else
             begin
-              self.class_variable_get("@@#{method.to_s}").read_object
+              self.class_variable_get("@@#{method.to_s}")
             rescue ::NameError
               return nil
             end
           end
-        end
 
       end
     end
