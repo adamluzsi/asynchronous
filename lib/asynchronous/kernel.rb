@@ -11,6 +11,7 @@
 # end
 #
 module Kernel
+
   def async(type= :Concurrency ,&block)
     case type.to_s.downcase[0]
       # Concurrency / VM / Green
@@ -30,4 +31,9 @@ module Kernel
 
     end
   end
+
+  def shared_memory
+    Asynchronous::SharedMemory
+  end unless method_defined? :shared_memory
+
 end

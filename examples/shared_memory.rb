@@ -11,7 +11,7 @@ async :OS do
 end
 
 loop do
-  if SharedMemory.test_value >= 10
+  if shared_memory.test_value >= 10
     Process.exit
   end
   puts SharedMemory.test_value

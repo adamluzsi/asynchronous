@@ -88,6 +88,10 @@ the usecase is simple like that:
 SharedMemory.anything_you_want_use_as_variable_name= {:some=>:object}
 SharedMemory.anything_you_want_use_as_variable_name #> {:some=>:object}
 
+# or
+
+shared_memory.anything_you_want_use_as_variable_name #> {:some=>:object}
+
 ```
 
 by default i set the memory allocation to 16Mb because it common usecase to me (MongoDB),
