@@ -9,6 +9,9 @@ module Asynchronous
   # when you need to update objects in the memory use :concurrency
   class Parallelism < Asynchronous::CleanClass
 
+    @@pids      ||= []
+    @@motherpid ||= $$
+
     def asynchronous_fork callable
       return ::Kernel.fork do
 
@@ -52,9 +55,6 @@ module Asynchronous
 
 
     def initialize callable
-
-      @@pids      ||= []
-      @@motherpid ||= $$
 
       @comm_line   = ::IO.pipe
       @value       = nil
