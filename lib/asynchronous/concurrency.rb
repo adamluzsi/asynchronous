@@ -7,7 +7,7 @@ module Asynchronous
   # when you need to update objects in the memory
   class Concurrency < Asynchronous::CleanClass
 
-    def initialize callable
+    def initialize( callable )
       begin
         @value= nil
         @try_count= 0
@@ -27,28 +27,13 @@ module Asynchronous
       end
     end
 
-    def asynchronous_get_value
-
-      if @value.nil?
-        until @rescue_state.nil?
-          sleep 1
-        end
-        @value= @thread.value
-      end
-
-      return @value
-
-    end
-
-    def asynchronous_set_value(obj)
-      @value= obj
-    end
-    alias :asynchronous_set_value= :asynchronous_set_value
-
     def synchronize
       asynchronous_get_value
     end
     alias :sync :synchronize
+    alias :call :synchronize
+
+    protected
 
     def method_missing(method, *args)
 
@@ -69,9 +54,23 @@ module Asynchronous
 
     end
 
-    #def respond_to_missing?(method, include_private = false)
-    #  value.respond_to?(method, include_private)
-    #end
+    def asynchronous_get_value
+
+      if @value.nil?
+        until @rescue_state.nil?
+          sleep 1
+        end
+        @value= @thread.value
+      end
+
+      return @value
+
+    end
+
+    def asynchronous_set_value(obj)
+      @value= obj
+    end
+    alias :asynchronous_set_value= :asynchronous_set_value
 
   end
 

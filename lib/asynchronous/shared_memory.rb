@@ -1,135 +1,136 @@
-module Asynchronous
+begin
 
-  class << self
-    attr_accessor :global_mutex
-  end
-  self.global_mutex = false
+  require 'process_shared'
+  module Asynchronous
 
-  class << self
-    attr_accessor :memory_allocation_size
-  end
-  self.memory_allocation_size= 16384
-
-  module Global
-
-    def self.mutex
-      @@mutex
-    end
-
-    @@mutex  = ProcessShared::Mutex.new
-
-  end
-
-
-  class MemoryObj < Asynchronous::CleanClass
-
-    @data  = nil
-    @mutex = nil
-
-    def initialize(obj)
-
-      @data= ::ProcessShared::SharedMemory.new(
-      ::Asynchronous.memory_allocation_size)
-
-      @mutex= ::ProcessShared::Mutex.new
-
-      @data.write_object(obj)
-
-    end
-
-    def asynchronous_set_value obj
-      return @data.write_object obj
-    end
-    alias :asynchronous_set_value= :asynchronous_set_value
-
-    def asynchronous_get_value
-      return @data.read_object
-    end
-
-    def method_missing(method, *args, &block)
-
-      #::Kernel.puts "method: #{method}, #{args}, #{block}"
-
-      new_value= nil
-      original_value= nil
-      return_value= nil
-      mutex_obj= nil
-
-      if ::Asynchronous.global_mutex == true
-        mutex_obj= ::Asynchronous::Global.mutex
-      else
-        mutex_obj= @mutex
-      end
-
-      mutex_obj.synchronize do
-
-        new_value= asynchronous_get_value
-
-        begin
-          original_value= new_value.dup
-        rescue ::TypeError
-          original_value= new_value
-        end
-
-        return_value= new_value.__send__(method,*args,&block)
-
-        unless new_value == original_value
-          asynchronous_set_value new_value
-        end
-
-      end
-
-      return return_value
-
-    end
-
-  end
-
-  class SharedMemory < Asynchronous::CleanClass
     class << self
-      def method_missing(method, *args)
+      attr_accessor :global_mutex
+    end
+    self.global_mutex = false
 
-        case true
+    class << self
+      attr_accessor :memory_allocation_size
+    end
+    self.memory_allocation_size= 16384
 
-          when method.to_s.include?('=')
+    module Global
 
-            @@static_variables ||= ::Asynchronous::MemoryObj.new(Array.new.push(:static_variables))
-            if @@static_variables.include?(method.to_s.sub!('=','').to_sym)
-              $stdout.puts "Warning! static varieble cant be changed without removing from the Asynchronous.static_variables array collection (sym)"
-              return nil
-            else
+      def self.mutex
+        @@mutex
+      end
 
-              begin
-                self.class_variable_get("@@#{method.to_s.sub('=','')}").asynchronous_set_value= args[0]
-              rescue ::NameError
-                self.class_variable_set(
-                    "@@#{method.to_s.sub('=','')}",
-                    ::Asynchronous::MemoryObj.new(args[0]))
+      @@mutex  = ProcessShared::Mutex.new
+
+    end
+
+
+    class MemoryObj < Asynchronous::CleanClass
+
+      @data  = nil
+      @mutex = nil
+
+      def initialize(obj)
+
+        @data= ::ProcessShared::SharedMemory.new(
+            ::Asynchronous.memory_allocation_size)
+
+        @mutex= ::ProcessShared::Mutex.new
+
+        @data.write_object(obj)
+
+      end
+
+      def asynchronous_set_value obj
+        return @data.write_object obj
+      end
+      alias :asynchronous_set_value= :asynchronous_set_value
+
+      def asynchronous_get_value
+        return @data.read_object
+      end
+
+      def method_missing(method, *args, &block)
+
+        #::Kernel.puts "method: #{method}, #{args}, #{block}"
+
+        new_value= nil
+        original_value= nil
+        return_value= nil
+        mutex_obj= nil
+
+        if ::Asynchronous.global_mutex == true
+          mutex_obj= ::Asynchronous::Global.mutex
+        else
+          mutex_obj= @mutex
+        end
+
+        mutex_obj.synchronize do
+
+          new_value = asynchronous_get_value
+
+          begin
+            original_value= new_value.dup
+          rescue ::TypeError
+            original_value= new_value
+          end
+
+          return_value= new_value.__send__(method,*args,&block)
+
+          unless new_value == original_value
+            asynchronous_set_value new_value
+          end
+
+        end
+
+        return return_value
+
+      end
+
+    end
+
+    class SharedMemory < Asynchronous::CleanClass
+      class << self
+        def method_missing(method, *args)
+
+          case true
+
+            when method.to_s.include?('=')
+
+              @@static_variables ||= ::Asynchronous::MemoryObj.new(Array.new.push(:static_variables))
+              if @@static_variables.include?(method.to_s.sub!('=','').to_sym)
+                $stdout.puts "Warning! static varieble cant be changed without removing from the Asynchronous.static_variables array collection (sym)"
+                return nil
+              else
+
+                begin
+                  self.class_variable_get("@@#{method.to_s.sub('=','')}").asynchronous_set_value= args[0]
+                rescue ::NameError
+                  self.class_variable_set(
+                      "@@#{method.to_s.sub('=','')}",
+                      ::Asynchronous::MemoryObj.new(args[0]))
+                end
+
               end
 
-            end
+            else
+              begin
+                self.class_variable_get("@@#{method.to_s}")
+              rescue ::NameError
+                return nil
+              end
+          end
 
-          else
-            begin
-              self.class_variable_get("@@#{method.to_s}")
-            rescue ::NameError
-              return nil
-            end
         end
-
       end
     end
+
+    def self.static_variables
+      SharedMemory.static_variables
+    end
+
   end
 
-  def self.static_variables
-    SharedMemory.static_variables
-  end
-
-end
-
-SharedMemory ||= Asynchronous::SharedMemory
-
-
+  SharedMemory ||= Asynchronous::SharedMemory
 
 =begin
 
@@ -212,3 +213,6 @@ SharedMemory ||= Asynchronous::SharedMemory
 
 =end
 
+rescue LoadError
+  $stderr.puts('You must run `gem install process_shared` in order to use shared memory')
+end

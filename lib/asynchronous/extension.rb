@@ -12,6 +12,7 @@
 #
 module Asynchronous
 
+
   def self.async type= :VM ,&block
 
     case type.to_s.downcase[0]
