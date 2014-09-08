@@ -1,4 +1,5 @@
-require_relative "../lib/asynchronous"
+require 'asynchronous'
+require 'asynchronous/shared_memory'
 
 shared_memory.ruby_worker_jobs= Array.new
 shared_memory.static_variables.push :ruby_worker_jobs

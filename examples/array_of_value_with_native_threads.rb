@@ -1,5 +1,4 @@
-require_relative "../lib/asynchronous"
-
+require 'asynchronous'
 
 async1= async :OS do
   1000000*5
@@ -7,17 +6,16 @@ end
 
 async2= async :OS do
 
-  var = ("sup" * 1000000)
+  var = ('S' * 300000)
   puts "the superHuge String length in the pipe is: #{var.length}"
-
   var
-end
 
+end
 
 async3= async :OS do
   1000000*5.0
 end
 
-puts async1
+puts async2.class
 
-puts [ async3, async2[0..5], async1 ]
+# puts [ async3, async2[0..5], async1 ]

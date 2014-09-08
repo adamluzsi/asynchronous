@@ -1,4 +1,5 @@
-require_relative "../lib/asynchronous"
+require 'asynchronous'
+require 'asynchronous/shared_memory'
 
 shared_memory.test_value  = Array.new
 shared_memory.ready_state = Hash.new

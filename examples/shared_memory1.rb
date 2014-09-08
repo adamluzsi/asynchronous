@@ -1,4 +1,5 @@
-require_relative "../lib/asynchronous"
+require 'asynchronous'
+require 'asynchronous/shared_memory'
 
 SharedMemory.test_value= 0
 async :OS do

@@ -12,39 +12,40 @@
 #
 module Asynchronous
 
+  module EXT
 
-  def self.async type= :VM ,&block
+    def async( type= :VM, &block )
 
-    case type.to_s.downcase[0]
-      # Concurrency / VM / Green
-      when "c","v","g"
-        begin
-          ::Asynchronous::Concurrency.new(block)
-        end
-      # Parallelism / OS / Native
-      when "p","o","n"
-        begin
-          ::Asynchronous::Parallelism.new(block)
-        end
-      else
-        begin
-          ::Asynchronous::Concurrency.new(block)
-        end
+      case type.to_s.downcase[0]
+        # Concurrency / VM / Green
+        when "c","v","g"
+          begin
+            ::Asynchronous::Concurrency.new(block)
+          end
+        # Parallelism / OS / Native
+        when "p","o","n"
+          begin
+            ::Asynchronous::Parallelism.new(block)
+          end
+        else
+          begin
+            ::Asynchronous::Concurrency.new(block)
+          end
+
+      end
 
     end
 
   end
 
-end
-
-module Kernel
-
-  def async type= :VM ,&block
-    ::Asynchronous.async( type, &block )
-  end
-
-  def shared_memory
-    ::Asynchronous::SharedMemory
-  end unless method_defined? :shared_memory
+  extend EXT
 
 end
+
+Object.__send__ :include, Asynchronous::EXT
+
+# module Kernel
+#   def async type= :VM ,&block
+#     ::Asynchronous.async( type, &block )
+#   end
+# end

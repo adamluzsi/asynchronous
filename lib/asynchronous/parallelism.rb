@@ -59,12 +59,6 @@ module Asynchronous
         @comm_line[1].write ::Marshal.dump(callable.call)
         @comm_line[1].flush
 
-        #::Kernel.loop do
-        #  #::Kernel.puts @comm_line[0].closed?
-        #  #::Kernel.puts @comm_line[1].closed?
-        #  ::Kernel.sleep 1
-        #end
-
       end
     end
 
@@ -94,8 +88,9 @@ module Asynchronous
       if @value.nil?
 
         ::Process.wait(@pid, ::Process::WNOHANG )
-
         @comm_line[1].close
+
+        #> wait for value
         @read_buffer.join
         @comm_line[0].close
 

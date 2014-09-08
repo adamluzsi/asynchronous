@@ -132,6 +132,15 @@ begin
 
   SharedMemory ||= Asynchronous::SharedMemory
 
+
+  module Kernel
+
+    def shared_memory
+      ::Asynchronous::SharedMemory
+    end unless method_defined? :shared_memory
+
+  end
+
 =begin
 
 

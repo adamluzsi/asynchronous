@@ -1,5 +1,5 @@
 # Require Gemfile gems
-require_relative "../lib/asynchronous"
+require 'asynchronous'
 
 # you can use simple :c also instead of :concurrency
 # remember :concurrency is all about GIL case, so
