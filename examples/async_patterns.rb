@@ -6,7 +6,7 @@ require_relative 'bootstrap'
 # you can modify the objects in memory
 # This is ideal for little operations in simultaneously or
 # when you need to update objects in the memory
-calculation = async :concurrency do
+thr1 = async :concurrency do
 
   sleep 2
   4 * 2
@@ -14,23 +14,24 @@ calculation = async :concurrency do
 end
 puts "hello concurrency"
 
-calculation = calculation.join
-calculation += 1
+calculation1 = thr1.value
+calculation1 += 1
 
-puts calculation
+puts calculation1
 
 #>--------------------------------------------------
 # or you can use simple {} without sym and this will be by default a
 # :concurrency pattern
 
-calculation = async { sleep 3; 4 * 3 }
+thr2 = async { sleep 3; 4 * 3 }
 
 puts "hello simple concurrency"
 
-calculation += 1
+calculation2 = thr2.value
+calculation2 += 1
 
 # remember you have to use  to cal the return value from the code block!
-puts calculation
+puts calculation2
 
 
 #>--------------------------------------------------
@@ -42,7 +43,7 @@ puts calculation
 # This is ideal for big operations where you need do a big process
 # w/o the fear of the Garbage collector slowness or the GIL lock
 # when you need to update objects in the memory use SharedMemory
-calculation = async :parallelism do
+thr3 = async :parallelism do
 
   sleep 4
   4 * 5
@@ -50,16 +51,17 @@ calculation = async :parallelism do
 end
 puts "hello parallelism"
 
-calculation += 1
+calculation3 = thr3.value
+calculation3 += 1
 
-puts calculation
+puts calculation3
 
 #>--------------------------------------------------
 
 # more complex way
 
 puts "mixed usecase with arrays as return obj"
-calc1 = async :parallelism do
+thr4 = async :parallelism do
 
   sleep 4
   # some big database processing brutal memory eater stuff
@@ -67,10 +69,10 @@ calc1 = async :parallelism do
 
 end
 
-calc2 = async {
+thr5 = async {
   [5+1,"sup!"]
 }
 
-puts 'calc1 is eql calc2:',calc1 == calc2
-puts (calc1+calc2).inspect
+puts 'calc1 is eql calc2:',thr4.value == thr5.value
+puts (thr4.value+thr5.value).inspect
 

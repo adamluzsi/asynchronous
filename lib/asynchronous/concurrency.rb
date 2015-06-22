@@ -5,73 +5,40 @@
 # when you need to update objects in the memory
 class Asynchronous::Concurrency < Asynchronous::CleanClass
 
-  def initialize callable
+  def initialize(&block)
+
+    @rescue_state= nil
+    @try_count = 0
+
     begin
       @value= nil
-      @try_count= 0
-      @rescue_state= nil
-      @thread ||= ::Thread.new { callable.call }
+      @thread ||= ::Thread.new { block.call }
       @rescue_state= nil
     rescue ThreadError
       @rescue_state ||= true
       @try_count += 1
       if 3 <= @try_count
-        @value= callable.call
+        @value= block.call
         @rescue_state= nil
       else
         sleep 5
         retry
       end
     end
+
   end
 
-  def asynchronous_get_value
-
+  def join
     if @value.nil?
       until @rescue_state.nil?
         sleep 1
       end
       @value= @thread.value
     end
-
-    return @value
-
   end
 
-  def asynchronous_set_value(obj)
-    @value= obj
+  def value
+    join; @value
   end
-
-  alias :asynchronous_set_value= :asynchronous_set_value
-
-  def join
-    asynchronous_get_value
-  end
-
-  alias :sync :join
-  alias :synchronize :sync
-
-  def method_missing(method, *args)
-
-    new_value= asynchronous_get_value
-
-    begin
-      original_value= new_value.dup
-    rescue ::TypeError
-      original_value= new_value
-    end
-
-    return_value= new_value.__send__(method, *args)
-    unless new_value == original_value
-      asynchronous_set_value new_value
-    end
-
-    return return_value
-
-  end
-
-  #def respond_to_missing?(method, include_private = false)
-  #  value.respond_to?(method, include_private)
-  #end
 
 end

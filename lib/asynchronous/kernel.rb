@@ -15,18 +15,18 @@ module Asynchronous::DCI
   extend self
 
   def async(type= :VM, &block)
-    case type.to_s[0].downcase
+    case type.to_s.downcase[0]
 
       # Concurrency / VM / Green
-      when "c", "v", "g"
-        ::Asynchronous::Concurrency.new(block)
+      when *%W[ c v g ]
+        ::Asynchronous::Concurrency.new(&block)
 
       # Parallelism / OS / Native
-      when "p", "o", "n"
-        ::Asynchronous::Parallelism.new(block)
+      when *%W[ p o n ]
+        ::Asynchronous::Parallelism.new(&block)
 
       else
-        ::Asynchronous::Concurrency.new(block)
+        ::Asynchronous::Concurrency.new(&block)
 
     end
   end
@@ -35,7 +35,7 @@ end
 
 Kernel.class_eval do
 
-  def async type= :VM, &block
+  def async(type=nil, &block)
     ::Asynchronous::DCI.async(type, &block)
   end
 
