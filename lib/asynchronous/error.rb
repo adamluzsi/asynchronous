@@ -1,4 +1,4 @@
-class Asynchronous::ERROR < StandardError
+class Asynchronous::Error < StandardError
 
   attr_reader :wrapped_error
   def initialize(wrapped_error)

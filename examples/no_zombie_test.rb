@@ -1,6 +1,6 @@
 require_relative 'bootstrap'
 
-calculation = async :parallelism do
+thr = async :parallelism do
 
   # Zombie!
   loop do

@@ -6,7 +6,7 @@ end
 
 async2= async :OS do
 
-  var = ("sup" * 100000)
+  var = ("!" * 1000000)
   puts "the superHuge String length in the pipe is: #{var.length}"
 
   var
@@ -19,19 +19,17 @@ async2_error= async :OS do
 
 end
 
-
 async3= async :OS do
   1000000*5.0
 end
 
-puts async1.value
-
-puts async2.value
-
 begin
   async2_error.value
 rescue Exception => ex
-  puts ex
+  puts "\n",'when error happen:',ex
 end
 
-# puts [ async3, async2.join[0..5], async1 ]
+puts "\n",'result length based on string form:'
+puts async1.value.to_s.length
+puts async2.value.to_s.length
+puts async3.value.to_s.length

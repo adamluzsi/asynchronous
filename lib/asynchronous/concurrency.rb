@@ -3,7 +3,7 @@
 # you can modify the objects in memory
 # This is ideal for little operations in simultaneously or
 # when you need to update objects in the memory
-class Asynchronous::Concurrency < Asynchronous::CleanClass
+class Asynchronous::Concurrency
 
   def initialize(&block)
 
