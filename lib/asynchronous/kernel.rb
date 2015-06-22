@@ -10,40 +10,33 @@
 #  "some awsome ruby code here!"
 # end
 #
-module Asynchronous
+module Asynchronous::DCI
 
-  def self.async type= :VM ,&block
+  extend self
 
-    case type.to_s.downcase[0]
+  def async(type= :VM, &block)
+    case type.to_s[0].downcase
+
       # Concurrency / VM / Green
-      when "c","v","g"
-        begin
-          ::Asynchronous::Concurrency.new(block)
-        end
+      when "c", "v", "g"
+        ::Asynchronous::Concurrency.new(block)
+
       # Parallelism / OS / Native
-      when "p","o","n"
-        begin
-          ::Asynchronous::Parallelism.new(block)
-        end
+      when "p", "o", "n"
+        ::Asynchronous::Parallelism.new(block)
+
       else
-        begin
-          ::Asynchronous::Concurrency.new(block)
-        end
+        ::Asynchronous::Concurrency.new(block)
 
     end
-
   end
 
 end
 
-module Kernel
+Kernel.class_eval do
 
-  def async type= :VM ,&block
-    ::Asynchronous.async( type, &block )
+  def async type= :VM, &block
+    ::Asynchronous::DCI.async(type, &block)
   end
-
-  def shared_memory
-    ::Asynchronous::SharedMemory
-  end unless method_defined? :shared_memory
 
 end

@@ -1,5 +1,4 @@
-require_relative "../lib/asynchronous"
-
+require_relative 'bootstrap'
 
 async1= async :OS do
   1000000*5
@@ -18,6 +17,6 @@ async3= async :OS do
   1000000*5.0
 end
 
-puts async1
+puts async1.join
 
 puts [ async3, async2[0..5], async1 ]

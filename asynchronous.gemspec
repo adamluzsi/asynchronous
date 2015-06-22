@@ -19,8 +19,4 @@ Gem::Specification.new do |spec|
   spec.test_files    = spec.files.grep(%r{^(test|spec|features)/})
   spec.require_paths = ["lib"]
 
-  spec.add_dependency "process_shared"
-  spec.add_development_dependency(%q<debugger>, [">= 0"])
-
-
 end

@@ -68,49 +68,11 @@ Remember well that GarbageCollector will affect the speed.
 
 ```ruby
 
-calculation= async { sleep 3; 4 * 3 }
-# to call the value (syncronize):
-calculation
+  calculation= async { sleep 3; 4 * 3 }
+  # to call the value (syncronize):
+  calculation
 
 ```
-
-### Shared Memory
-
-By default the last value will be returned (OS) in IO.pipe,
-but when you need something else, there is the shared_memory!
-
-Shared memory is good when you want make a ruby worked on native OS thread ,
-but need to update data back at the mother process.
-
-the usecase is simple like that:
-```ruby
-
-SharedMemory.anything_you_want_use_as_variable_name= {:some=>:object}
-SharedMemory.anything_you_want_use_as_variable_name #> {:some=>:object}
-
-# or
-
-shared_memory.anything_you_want_use_as_variable_name #> {:some=>:object}
-
-```
-
-by default i set the memory allocation to 16Mb because it common usecase to me (MongoDB),
-but feel free to change!:
-```ruby
-
-Asynchronous.memory_allocation_size= 1024 #INT!
-
-```
-
-## making shared memory obj static (constant)
-
-you can set a shared memory obj to be static if you dont want it to be changed later on
-```ruby
-shared_memory.test_value= Array.new.push(:something)
-Asynchronous.static_variables.push :test_value
-shared_memory.test_value= Array.new #> this wont happen
-```
-
 
 ### Example
 

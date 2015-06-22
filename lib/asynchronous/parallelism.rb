@@ -100,10 +100,12 @@ module Asynchronous
     end
     alias :asynchronous_set_value= :asynchronous_set_value
 
-    def synchronize
+    def join
       asynchronous_get_value
     end
-    alias :sync :synchronize
+
+    alias :sync :join
+    alias :synchronize :sync
 
     # kill kidos at Kernel Exit
     ::Kernel.at_exit {

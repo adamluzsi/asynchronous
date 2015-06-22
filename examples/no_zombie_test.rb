@@ -1,4 +1,4 @@
-require_relative "../lib/asynchronous"
+require_relative 'bootstrap'
 
 calculation = async :parallelism do
 

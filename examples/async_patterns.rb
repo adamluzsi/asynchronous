@@ -1,5 +1,5 @@
 # Require Gemfile gems
-require_relative "../lib/asynchronous"
+require_relative 'bootstrap'
 
 # you can use simple :c also instead of :concurrency
 # remember :concurrency is all about GIL case, so
@@ -14,6 +14,7 @@ calculation = async :concurrency do
 end
 puts "hello concurrency"
 
+calculation = calculation.join
 calculation += 1
 
 puts calculation
@@ -70,6 +71,6 @@ calc2 = async {
   [5+1,"sup!"]
 }
 
-puts calc1 == calc2
+puts 'calc1 is eql calc2:',calc1 == calc2
 puts (calc1+calc2).inspect
 
