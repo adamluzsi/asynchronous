@@ -13,7 +13,9 @@ class Asynchronous::Parallelism
   @@pids ||= []
   @@motherpid ||= $$
 
-  def initialize(&callable)
+  def initialize(disable_gc=true,&callable)
+
+    @disable_gc = !!disable_gc
 
     @comm_line = ::IO.pipe
 
@@ -21,6 +23,7 @@ class Asynchronous::Parallelism
     @read_buffer = nil
 
     read_buffer
+
     @pid = fork(&callable)
     @@pids.push(@pid)
 
@@ -66,6 +69,8 @@ class Asynchronous::Parallelism
   def fork(&block)
     return ::Kernel.fork do
 
+      GC.disable if @disable_gc
+
       begin
         ::Kernel.trap("TERM") do
           ::Kernel.exit
@@ -93,7 +98,7 @@ class Asynchronous::Parallelism
       dumped_result = ::Marshal.dump(result).to_s
 
       @comm_line[1].write(dumped_result)
-      ::Kernel.sleep(dumped_result.length*0.001)
+      ::Kernel.sleep(dumped_result.length.to_f*0.005)
 
       @comm_line[1].flush
       @comm_line[1].close
