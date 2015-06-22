@@ -80,7 +80,7 @@ class Asynchronous::Parallelism
             begin
               ::Kernel.sleep 1
               if ::Asynchronous::Parallelism.alive?(@@motherpid) == false
-                ::Kernel.exit
+                ::Kernel.exit!
               end
             end
           end
