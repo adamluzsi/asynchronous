@@ -40,7 +40,7 @@ Like parsing (in some case)
 
 ```ruby
 
-calculation = async :parallelism do
+thr = async :parallelism do
 
   sleep 4
   # remember, everything you
@@ -51,8 +51,8 @@ calculation = async :parallelism do
 
 end
 
-# to call the value (syncronize):
-calculation
+# to call the value:
+thr.value
 
 ```
 
@@ -68,36 +68,40 @@ Remember well that GarbageCollector will affect the speed.
 
 ```ruby
 
-  calculation= async { sleep 3; 4 * 3 }
-  # to call the value (syncronize):
-  calculation
+  thr = async { sleep 3; 4 * 3 }
+  
+  # to call the value:
+  calculation = thr.value
 
 ```
 
 ### Example
 
+you can use simple :p or :parallelism as nametag
+remember :parallelism is all about real OS thread case, 
+so you CANT modify the objects in the memory,
+the normal variables will only be copy on write modify
+
+This is ideal for big operations where you need do a big process
+w/o the fear of the Garbage collector slowness or the GIL lock
+when you need to update objects in the memory use SharedMemory
+
+Remember! if the hardware only got 1 cpu, it will be like a harder
+to use concurrency with an expensive memory allocation
+
 ```ruby
 
-# you can use simple :p or :parallelism as nametag
-# remember :parallelism is all about real OS thread case, so
-# you CANT modify the objects in memory only in sharedmemories,
-# the normal variables will only be copy on write modify
-# This is ideal for big operations where you need do a big process
-# w/o the fear of the Garbage collector slowness or the GIL lock
-# when you need to update objects in the memory use SharedMemory
-#
-# Remember! if the hardware only got 1 cpu, it will be like a harder
-# to use concurrency with an expensive memory allocation
-calculation = async :OS do
-
-  sleep 4
-  4 * 5
-
-end
-
-calculation += 1
-
-puts calculation
+  thr = async :OS do
+  
+    sleep 4
+    4 * 5
+  
+  end
+  
+  calculation = thr.value
+  calculation += 1
+  
+  puts calculation
 
 ```
 
@@ -107,32 +111,15 @@ there are other examples that you can check in the exampels folder
 ### known bugs
 
 In rare case when you get object_buffer error
-* use .sync method on the async variable
+* use .join method on the async variable
 
 ```ruby
-calculation = async :OS do
-  sleep 4
-  4 * 5
-end
 
-calculation.sync #> or synchronize
-```
+  thr = async :OS do
+    sleep 4
+    4 * 5
+  end
+  
+  thr.join #> thr
 
-Kernel holding on Native threads with pipes can choke up
-* direct sleep commands can do this on multiple native threads
-** hard processing load not like that, only kernel sleep
-
-SharedMemory objects not updating on chain method obj manipulation
-
-```ruby
-shared_memory.var= {'jobs'=>[]}
-
-{'jobs'=>[]}['jobs'].push 'data' #> {'jobs'=>[]}
-
-workaround is like that:
-
-local_variable= {'jobs'=>[]}
-local_variable['jobs'].push('data')
-
-shared_memory.var= local_variable
 ```
