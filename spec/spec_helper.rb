@@ -1,0 +1,24 @@
+require 'rspec'
+require 'asynchronous'
+
+RSpec.configure do |config|
+  config.expect_with :rspec do |expectations|
+    expectations.include_chain_clauses_in_custom_matcher_descriptions = true
+  end
+
+  config.mock_with :rspec do |mocks|
+    mocks.verify_partial_doubles = true
+  end
+
+  config.shared_context_metadata_behavior = :apply_to_host_groups
+end
+
+Kernel.at_exit do
+  if Asynchronous::ZombiKiller::MOTHER_PID == $PROCESS_ID
+    begin
+      loop { Process.kill('KILL', Process.wait(-1, Process::WUNTRACED)) }
+    rescue Errno::ESRCH, Errno::ECHILD
+      puts 'done'
+    end
+  end
+end
