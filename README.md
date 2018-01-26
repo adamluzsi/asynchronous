@@ -10,6 +10,20 @@ for example csv transformation
 
 ### Example
 
+#### Basic usage
+
+```ruby
+require 'asynchronous'
+
+thr = Asynchronous::Thread.new do
+    "some expensive work"
+end
+
+thr.value #> "some expensive work"
+```
+
+
+#### With Syntax Sugar
 ```ruby
 require 'asynchronous/core_ext'
 
