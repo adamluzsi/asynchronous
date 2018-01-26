@@ -1,7 +1,7 @@
 #encoding: UTF-8
 module Asynchronous
+  require 'asynchronous/utils'
   require 'asynchronous/error'
-  require 'asynchronous/concurrency'
-  require 'asynchronous/parallelism'
-  require 'asynchronous/kernel'
+  require 'asynchronous/thread'
+  require 'asynchronous/zombi_killer'
 end

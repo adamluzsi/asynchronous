@@ -2,19 +2,32 @@ Asynchronous
 ============
 
 Asynchronous Patterns for Ruby Based on Pure MRI CRuby code
-The goal is to use the original MRI C libs for achive
-real async patterns in ruby
+The goal is to use the original MRI C libs for achieve
+real async processing in ruby
 
-Well it is achived in Ruby really simple, and elegant way.
+This is good for where cpu focused for included,
+for example csv transformation
+
+### Example
+
+```ruby
+require 'asynchronous/core_ext'
+
+thr = async do
+    "some expensive work"
+end
+
+thr.value #> "some expensive work"
+```
 
 
 ### Quoting Sun's Multithreaded Programming Guide:
 
-Parallelism: 
+Parallelism:
 - A condition that arises when at least two threads are executing simultaneously.
 
-Concurrency: 
-- A condition that exists when at least two threads are making progress. 
+Concurrency:
+- A condition that exists when at least two threads are making progress.
 - A more generalized form of parallelism that can include time-slicing as a form of virtual parallelism
 
 #### for short:
@@ -25,101 +38,3 @@ Eg. multitasking on a single-core machine.
 
 Parallelism is when tasks literally run at the same time.
 Eg. on a multicore processor.
-
-
-### OS managed thread (Native Threads)
-
-copy on write memory share,
-so you cant change anything in the mother process
-only with the return value later.
-This method is stronger the more CPU core the os have
-
-Ideal for Big jobs that require lot of memory allocation or
-heavy CPU load to get a value
-Like parsing (in some case)
-
-```ruby
-
-thr = async :parallelism do
-
-  sleep 4
-  # remember, everything you
-  # write here only mather in this block
-  # will not affect the real process only
-  # the last return value of the block
-  4 * 5
-
-end
-
-# to call the value:
-thr.value
-
-```
-
-## VM managed thread (Green Threads)
-
-you can use simple :c also instead of :concurrency as sym,
-remember :concurrency is all about GIL case, so
-you can modify the objects in memory
-This is ideal for little operations in simultaneously or
-when you need to update objects in the memory and not the
-return value what is mather.
-Remember well that GarbageCollector will affect the speed.
-
-```ruby
-
-  thr = async { sleep 3; 4 * 3 }
-  
-  # to call the value:
-  calculation = thr.value
-
-```
-
-### Example
-
-you can use simple :p or :parallelism as nametag
-remember :parallelism is all about real OS thread case, 
-so you CANT modify the objects in the memory,
-the normal variables will only be copy on write modify
-
-This is ideal for big operations where you need do a big process
-w/o the fear of the Garbage collector slowness or the GIL lock
-when you need to update objects in the memory use SharedMemory
-
-Remember! if the hardware only got 1 cpu, it will be like a harder
-to use concurrency with an expensive memory allocation
-
-```ruby
-
-  thr = async :OS do
-  
-    sleep 4
-    4 * 5
-  
-  end
-  
-  calculation = thr.value
-  calculation += 1
-  
-  puts calculation
-
-```
-
-
-there are other examples that you can check in the exampels folder
-
-### known bugs
-
-In rare case when you get object_buffer error
-* use .join method on the async variable
-
-```ruby
-
-  thr = async :OS do
-    sleep 4
-    4 * 5
-  end
-  
-  thr.join #> thr
-
-```

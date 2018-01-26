@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    asynchronous (4.0.0.pre)
+    asynchronous (4.0.0)
 
 GEM
   remote: http://rubygems.org/

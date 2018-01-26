@@ -1,4 +1,5 @@
 require 'rspec'
+require 'timeout'
 require 'asynchronous'
 
 RSpec.configure do |config|
@@ -22,3 +23,12 @@ Kernel.at_exit do
     end
   end
 end
+
+class ExampleCustomClassForValue
+  attr_reader :a
+  def initialize(a)
+    @a = a
+  end
+end
+
+BOOTSTRAP_FILE_PATH = File.expand_path(File.join(File.dirname(__FILE__), '..', 'examples', 'bootstrap.rb'))
