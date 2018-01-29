@@ -32,3 +32,11 @@ class ExampleCustomClassForValue
 end
 
 BOOTSTRAP_FILE_PATH = File.expand_path(File.join(File.dirname(__FILE__), '..', 'examples', 'bootstrap.rb'))
+
+RSpec::Matchers.define(:finish_within) do |duration|
+  supports_block_expectations
+
+  match do |block|
+    expect { Timeout.timeout(duration, &block) }.to_not raise_error
+  end
+end
