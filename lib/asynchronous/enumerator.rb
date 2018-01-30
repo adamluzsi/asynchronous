@@ -17,16 +17,9 @@ class Asynchronous::Enumerator
   end
 
   def map
-    values = []
-    thrs = []
-
-    @enum.each do |args|
-      thrs << @pool.async { yield(args) }
-    end
-
-    values.push(*thrs.map(&:value))
-    thrs.clear
-    values
+    @enum.map do |args|
+      @pool.async { yield(args) }
+    end.map(&:value)
   end
 
   def any?(&block)
