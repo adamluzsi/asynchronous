@@ -123,30 +123,9 @@ RSpec.describe Asynchronous::Thread do
   end
 
   describe 'no zombies' do
-    subject(:pid) { `ruby -r "#{BOOTSTRAP_FILE_PATH}" -e "pid = async { sleep(15) }.instance_variable_get(:@pid); puts pid "`.to_i }
-
-    it { expect { pid; sleep(2); Process.kill(0, pid) }.to raise_error Errno::ESRCH }
+    subject(:pid) { `#{command}`.to_i }
+    let(:command) { %Q(ruby -r "#{BOOTSTRAP_FILE_PATH}" -e #{code.inspect}) }
+    let(:code) { %(pid = async { sleep(15) }.instance_variable_get(:@pid) ; puts pid) }
+    it { expect { pid; sleep(1.3); Process.kill(0, pid) }.to raise_error Errno::ESRCH }
   end
 end
-
-# http://ruby-doc.org/core-2.2.0/Thread.html
-# join
-# key?
-# keys
-# kill
-# pending_interrupt?
-# priority
-# priority=
-# raise
-# run
-# safe_level
-# set_trace_func
-# status
-# stop?
-# terminate
-# thread_variable?
-# thread_variable_get
-# thread_variable_set
-# thread_variables
-# value
-# wakeup

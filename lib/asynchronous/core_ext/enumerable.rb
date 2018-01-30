@@ -1,11 +1,6 @@
 require 'asynchronous'
-Enumerable.module_eval do
-  def concurrently(scale)
-    puts self
-    pool = Asynchronous::Pool.new(scale)
 
-    Enumerator.new do |yielder|
-      # pool.async { yielder.yield }
-    end
-  end
+selector = proc { |m| m.ancestors.include?(Enumerable) }
+ObjectSpace.each_object(Module).select(&selector).each do |constant|
+  constant.__send__(:include, ::Asynchronous::Enumerable)
 end

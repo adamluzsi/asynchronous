@@ -1,13 +1,6 @@
-module Asynchronous::Utils
+module Asynchronous::Runtime
   extend(self)
-
-  def alive?(pid)
-    ::Process.kill(0, pid)
-    return true
-  rescue ::Errno::ESRCH
-    return false
-  end
-
+  #
   # Number of processors seen by the OS and used for process scheduling.
   #
   # * AIX: /usr/sbin/pmcycles (AIX 5+), /usr/sbin/lsdev
@@ -22,8 +15,8 @@ module Asynchronous::Utils
   # * Tru64 UNIX: /usr/sbin/psrinfo
   # * UnixWare: /usr/sbin/psrinfo
   #
-  def processor_count
-    @processor_count ||= begin
+  def num_cpu
+    @NumCPU ||= begin
       if defined?(Etc) && Etc.respond_to?(:nprocessors)
         Etc.nprocessors
       else
@@ -59,5 +52,21 @@ module Asynchronous::Utils
         end
       end
     end
+  end
+
+  def alive?(pid)
+    try_collect_finished_child_process(pid)
+    ::Process.kill(0, pid)
+    return true
+  rescue ::Errno::ESRCH
+    return false
+  end
+
+  private
+
+  def try_collect_finished_child_process(pid)
+    ::Process.wait(pid, ::Process::WNOHANG)
+  rescue ::Errno::ECHILD
+    nil
   end
 end

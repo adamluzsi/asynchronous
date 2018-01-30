@@ -2,15 +2,15 @@ class Asynchronous::Thread
   def initialize(&callable)
     @value = nil
     @value_received = false
-    @read, @write = ::IO.pipe
-    read_buffer
 
-    @pid = fork(&callable)
+    open_pipe
+    read_buffer
+    fork(callable)
   end
 
   def join
     wait
-    receive_value! unless @value_received
+    nil until @value_received
     raise(@value.wrapped_error) if @value.is_a?(::Asynchronous::Error)
     self
   end
@@ -34,14 +34,7 @@ class Asynchronous::Thread
   protected
 
   def alive?
-    ::Asynchronous::Utils.alive?(@pid)
-  end
-
-  def receive_value!
-    @write.close
-    read_buffer.join
-    @read.close
-    @value_received = true
+    ::Asynchronous::Runtime.alive?(@pid)
   end
 
   def wait(flag = 0)
@@ -50,13 +43,17 @@ class Asynchronous::Thread
     nil
   end
 
-  def fork(&callable)
-    ::Kernel.fork { main(&callable) }
+  def fork(callable)
+    @pid = ::Kernel.fork { main(&callable) }
   end
 
   def read_buffer
-    @read_buffer ||= ::Thread.new do
+    ::Thread.new do
+      nil until @pid
+      @write.close
       @value = Marshal.load(@read)
+      @read.close
+      @value_received = true
     end
   end
 
@@ -75,13 +72,16 @@ class Asynchronous::Thread
   end
 
   def write_result!(result)
-    return unless Asynchronous::ZombiKiller.how_is_mom?
     ::Marshal.dump(result, @write)
     @write.flush
     @write.close
   rescue Errno::EPIPE
     nil
   end
-end
 
-# Marshal.load(File.binread(FNAME))
+  def open_pipe
+    @read, @write = ::IO.pipe
+  rescue ::Errno::EMFILE
+    retry
+  end
+end

@@ -8,7 +8,6 @@ RSpec.describe Asynchronous::Enumerable do
     subject(:concurrently_enum) { patched_enumerable.concurrently }
 
     it { expect(concurrently_enum.respond_to?(:each)).to be true }
-    it { expect(concurrently_enum.each).to be concurrently_enum }
 
     describe '.map' do
       subject(:mapped_values) { concurrently_enum.map { |x| x + 1 } }

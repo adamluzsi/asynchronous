@@ -2,7 +2,15 @@ require 'rspec'
 require 'timeout'
 require 'asynchronous'
 
+module SyntaxSugarForBlockExpected
+  def is_expect
+    expect { subject }
+  end
+end
+
 RSpec.configure do |config|
+  config.include(SyntaxSugarForBlockExpected)
+
   config.expect_with :rspec do |expectations|
     expectations.include_chain_clauses_in_custom_matcher_descriptions = true
   end
@@ -31,12 +39,13 @@ class ExampleCustomClassForValue
   end
 end
 
-BOOTSTRAP_FILE_PATH = File.expand_path(File.join(File.dirname(__FILE__), '..', 'examples', 'bootstrap.rb'))
+EXAMPLE_DIR_PATH = File.expand_path(File.join(File.dirname(__FILE__), '..', 'examples'))
+BOOTSTRAP_FILE_PATH = File.join(EXAMPLE_DIR_PATH, 'bootstrap.rb')
 
 RSpec::Matchers.define(:finish_within) do |duration|
   supports_block_expectations
 
-  match do |block|
-    expect { Timeout.timeout(duration, &block) }.to_not raise_error
-  end
+  match { |block| expect { Timeout.timeout(duration, &block) }.to_not raise_error }
+  match_when_negated { |block| expect { Timeout.timeout(duration, &block) }.to raise_error(Timeout::Error) }
 end
+

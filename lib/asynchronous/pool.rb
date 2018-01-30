@@ -23,12 +23,12 @@ class Asynchronous::Pool
     filter_pids
     return unless @pids.length < @size
     thr = Asynchronous::Thread.new(&block)
-    add_pid thr.instance_variable_get(:@pid)
+    add_pid(thr.instance_variable_get(:@pid))
     thr
   end
 
   def filter_pids
-    @pids.select! { |pid| Asynchronous::Utils.alive?(pid) }
+    @pids.select! { |pid| Asynchronous::Runtime.alive?(pid) }
   end
 
   def add_pid(pid)
